@@ -1,0 +1,35 @@
+{
+  "name": "exercise-tracker",
+  "version": "0.0.1",
+  "description": "Exercise tracker built as part of the FreeCodeCamp curriculum",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "watch": "nodemon index.js",
+    "lint": "eslint .",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AllyMurray/exercise-tracker.git"
+  },
+  "keywords": [
+    "freecodecamp"
+  ],
+  "author": "ally murray",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AllyMurray/exercise-tracker/issues"
+  },
+  "homepage": "https://github.com/AllyMurray/exercise-tracker#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "jest": "^25.1.0",
+    "nodemon": "^2.0.2"
+  }
+}
