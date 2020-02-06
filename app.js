@@ -5,6 +5,7 @@ const exerciseRouter = require('./controllers/exercise');
 const mongoose = require('mongoose');
 const config = require('./utils/config');
 const logger = require('./utils/logger');
+const errorHandler = require('./middleware/errorHandler');
 const app = express();
 
 logger.info('connecting to:', config.MONGODB_URI);
@@ -30,5 +31,7 @@ app.get('/', (request, response) => {
 });
 
 app.use('/api/exercise', exerciseRouter);
+
+app.use(errorHandler);
 
 module.exports = app;
