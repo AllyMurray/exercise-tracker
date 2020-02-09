@@ -8,6 +8,9 @@ https://exercise-tracker.allymurray.com
 
 - [Node.js](https://nodejs.org)
 - [Express](https://expressjs.com)
+- [Mongoose](https://mongoosejs.com)
+- [mongoose-unique-validator](https://github.com/blakehaswell/mongoose-unique-validator)
+- [body-parser](https://github.com/expressjs/body-parser)
 - [CORS](https://github.com/expressjs/cors)
 - [dotenv](https://github.com/motdotla/dotenv)
 
@@ -16,6 +19,7 @@ https://exercise-tracker.allymurray.com
 - [ESLint](https://eslint.org)
 - [Jest](https://jestjs.io)
 - [nodemon](https://nodemon.io)
+- [SuperTest](https://github.com/visionmedia/supertest)
 
 ## User stories :
 
