@@ -5,19 +5,19 @@ const supertest = require('supertest');
 const User = require('../../models/user');
 
 const api = supertest(app);
-const initialUsername = 'Test user 1';
+const testUser = 'Test user';
 const baseApiUrl = '/api/exercise';
 
-describe('creating a new user', () => {
-  beforeEach(async () => {
-    await User.deleteMany({});
-  });
+beforeEach(async () => {
+  await User.deleteMany({});
+});
 
+describe('creating a new user', () => {
   test('succeeds with an unused username', async () => {
     const usersAtStart = await helper.usersInDb();
 
     const newUser = {
-      username: 'Test user 2'
+      username: testUser
     };
 
     await api
@@ -69,12 +69,12 @@ describe('creating a new user', () => {
   });
 
   test('fails with proper statuscode and message if username already taken', async () => {
-    const user = new User({ username: initialUsername });
+    const user = new User({ username: testUser });
     await user.save();
     const usersAtStart = await helper.usersInDb();
 
     const newUser = {
-      username: initialUsername
+      username: testUser
     };
 
     const result = await api
@@ -88,6 +88,39 @@ describe('creating a new user', () => {
 
     const usersAtEnd = await helper.usersInDb();
     expect(usersAtEnd.length).toBe(usersAtStart.length);
+  });
+});
+
+describe('get all users', () => {
+  beforeEach(async () => {
+    for (let i = 1; i <= 5; i++) {
+      const user = new User({ username: `${testUser} ${i}` });
+      await user.save();
+    }
+  });
+
+  test('returns all users from the database', async () => {
+    const usersAtStart = await helper.usersInDb();
+
+    const result = await api
+      .get(`${baseApiUrl}/users`)
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
+
+    expect(result.body.length).toBe(usersAtStart.length);
+  });
+
+  test('returns users with the correct properties', async () => {
+    const result = await api
+      .get(`${baseApiUrl}/users`)
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
+
+    const firstUser = result.body[0];
+
+    expect(firstUser).toHaveProperty('_id');
+    expect(firstUser).toHaveProperty('username');
+    expect(Object.keys(firstUser).length).toBe(2);
   });
 });
 

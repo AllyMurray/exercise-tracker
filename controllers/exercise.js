@@ -25,6 +25,24 @@ exerciseRouter.post(
   } catch (exception) {
     next(exception);
   }
+
+exerciseRouter.get('/users', async (request, response, next) => {
+  try {
+    const users = await User.find({});
+    response.json(
+      users.map(u =>
+        u.toJSON({
+          transform: (document, returnedObject) => {
+            delete returnedObject.__v;
+            delete returnedObject.log;
+          }
+        })
+      )
+    );
+  } catch (exception) {
+    next(exception);
+  }
+});
 });
 
 module.exports = exerciseRouter;
