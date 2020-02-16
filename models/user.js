@@ -5,7 +5,17 @@ const userSchema = new mongoose.Schema({
   username: {
     type: String,
     unique: true
-  }
+  },
+  log: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Log'
+    }
+  ]
+});
+
+userSchema.virtual('count').get(() => {
+  return this.log.length;
 });
 
 userSchema
