@@ -3,6 +3,7 @@ const helper = require('../../test/test_helper');
 const mongoose = require('mongoose');
 const supertest = require('supertest');
 const User = require('../../models/user');
+const Log = require('../../models/log');
 
 const api = supertest(app);
 const testUser = 'Test user';
@@ -121,6 +122,91 @@ describe('get all users', () => {
     expect(firstUser).toHaveProperty('_id');
     expect(firstUser).toHaveProperty('username');
     expect(Object.keys(firstUser).length).toBe(2);
+  });
+});
+
+describe('adding a log to a user', () => {
+  beforeEach(async () => {
+    await Log.deleteMany();
+    const user = new User({ username: testUser });
+    await user.save();
+  });
+
+  test('returns the user with the submitted log details', async () => {
+    const usersAtStart = await helper.usersInDb();
+
+    const newLog = {
+      userId: usersAtStart[0]._id.toString(),
+      description: 'Test log',
+      duration: 60,
+      date: '2020-01-01'
+    };
+
+    const result = await api
+      .post(`${baseApiUrl}/add`)
+      .type('form')
+      .send(newLog)
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
+
+    expect(result.body).toHaveProperty('_id');
+    expect(result.body).toHaveProperty('username');
+    expect(result.body).toHaveProperty('description');
+    expect(result.body).toHaveProperty('duration');
+    expect(result.body).toHaveProperty('date');
+    expect(Object.keys(result.body).length).toBe(5);
+  });
+
+  test('with no date, returns the user with the submitted log details and todays date', async () => {
+    const usersAtStart = await helper.usersInDb();
+
+    const newLog = {
+      userId: usersAtStart[0]._id.toString(),
+      description: 'Test log',
+      duration: 60
+    };
+
+    const result = await api
+      .post(`${baseApiUrl}/add`)
+      .type('form')
+      .send(newLog)
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
+
+    const returnedDate = new Date(result.body.date).setHours(0, 0, 0, 0);
+    const today = new Date().setHours(0, 0, 0, 0);
+
+    expect(returnedDate).toBe(today);
+  });
+
+  test('fails with proper statuscode and message if required parameters are not supplied', async () => {
+    const result = await api
+      .post(`${baseApiUrl}/add`)
+      .type('form')
+      .send()
+      .expect(422)
+      .expect('Content-Type', /application\/json/);
+
+    expect(result.body.error.every(x => x.msg === 'Invalid value')).toBe(true);
+    expect(result.body.error.length).toBe(3);
+  });
+
+  test('fails with proper statuscode and message if required parameters are empty', async () => {
+    const newLog = {
+      userId: '',
+      description: '',
+      duration: ''
+    };
+
+    const result = await api
+      .post(`${baseApiUrl}/add`)
+      .type('form')
+      .send(newLog)
+      .expect(422)
+      .expect('Content-Type', /application\/json/);
+
+    expect(result.body.error.every(x => x.msg === 'Invalid value')).toBe(true);
+    expect(result.body.error.length).toBe(3);
   });
 });
 
