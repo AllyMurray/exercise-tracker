@@ -8,6 +8,7 @@ https://exercise-tracker.allymurray.com
 
 - [Node.js](https://nodejs.org)
 - [Express](https://expressjs.com)
+- [express-validator](https://express-validator.github.io/docs/schema-validation.html)
 - [Mongoose](https://mongoosejs.com)
 - [mongoose-unique-validator](https://github.com/blakehaswell/mongoose-unique-validator)
 - [body-parser](https://github.com/expressjs/body-parser)
