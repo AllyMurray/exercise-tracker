@@ -1,7 +1,20 @@
 const exerciseRouter = require('express').Router();
 const User = require('../models/user');
+const { check, validationResult } = require('express-validator');
 
-exerciseRouter.post('/new-user', async (request, response, next) => {
+exerciseRouter.post(
+  '/new-user',
+  [
+    check('username')
+      .not()
+      .isEmpty()
+  ],
+  async (request, response, next) => {
+    const errors = validationResult(request);
+    if (!errors.isEmpty()) {
+      return response.status(422).json({ error: errors.array() });
+    }
+
   try {
     const user = new User({
       username: request.body.username

@@ -5,21 +5,19 @@ const supertest = require('supertest');
 const User = require('../../models/user');
 
 const api = supertest(app);
-const initialUsername = 'User One';
+const initialUsername = 'Test user 1';
 const baseApiUrl = '/api/exercise';
 
-describe('when there is initially one user in db', () => {
+describe('creating a new user', () => {
   beforeEach(async () => {
     await User.deleteMany({});
-    const user = new User({ username: initialUsername });
-    await user.save();
   });
 
-  test('creation succeeds with an unused username', async () => {
+  test('succeeds with an unused username', async () => {
     const usersAtStart = await helper.usersInDb();
 
     const newUser = {
-      username: 'User Two'
+      username: 'Test user 2'
     };
 
     await api
@@ -36,7 +34,43 @@ describe('when there is initially one user in db', () => {
     expect(usernames).toContain(newUser.username);
   });
 
-  test('creation fails with proper statuscode and message if username already taken', async () => {
+  test('fails with proper statuscode and message if username is not supplied', async () => {
+    const result = await api
+      .post(`${baseApiUrl}/new-user`)
+      .type('form')
+      .send()
+      .expect(422)
+      .expect('Content-Type', /application\/json/);
+
+    expect(result.body.error.length).toBe(1);
+    expect(result.body.error[0].msg).toBe('Invalid value');
+
+    const usersAtEnd = await helper.usersInDb();
+    expect(usersAtEnd.length).toBe(0);
+  });
+
+  test('fails with proper statuscode and message if username is empty', async () => {
+    const newUser = {
+      username: ''
+    };
+
+    const result = await api
+      .post(`${baseApiUrl}/new-user`)
+      .type('form')
+      .send(newUser)
+      .expect(422)
+      .expect('Content-Type', /application\/json/);
+
+    expect(result.body.error.length).toBe(1);
+    expect(result.body.error[0].msg).toBe('Invalid value');
+
+    const usersAtEnd = await helper.usersInDb();
+    expect(usersAtEnd.length).toBe(0);
+  });
+
+  test('fails with proper statuscode and message if username already taken', async () => {
+    const user = new User({ username: initialUsername });
+    await user.save();
     const usersAtStart = await helper.usersInDb();
 
     const newUser = {
