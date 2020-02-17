@@ -210,6 +210,92 @@ describe('adding a log to a user', () => {
   });
 });
 
+describe('getting a users log', () => {
+  beforeEach(async () => {
+    await Log.deleteMany();
+    const user = new User({ username: testUser });
+    for (let i = 1; i <= 5; i++) {
+      const log = Log({
+        userId: user._id.toString(),
+        description: `Test log ${i}`,
+        duration: 5 * i
+      });
+      await log.save();
+      user.log = [...user.log, log];
+    }
+    await user.save();
+  });
+
+  test('returns a users log with the correct parameters', async () => {
+    const usersAtStart = await helper.usersInDb();
+
+    const result = await api
+      .get(`${baseApiUrl}/log`)
+      .query({ userId: usersAtStart[0]._id.toString() })
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
+
+    expect(result.body).toHaveProperty('_id');
+    expect(result.body).toHaveProperty('username');
+    expect(result.body).toHaveProperty('log');
+    expect(Object.keys(result.body).length).toBe(3);
+  });
+
+  test('with no parameters returns the full log', async () => {
+    const usersAtStart = await helper.usersInDb();
+
+    const result = await api
+      .get(`${baseApiUrl}/log`)
+      .query({ userId: usersAtStart[0]._id.toString() })
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
+
+    expect(result.body.log.length).toBe(5);
+  });
+
+  test('passing the limit parameter returns the correct number of log entries', async () => {
+    const usersAtStart = await helper.usersInDb();
+
+    const result = await api
+      .get(`${baseApiUrl}/log`)
+      .query({ userId: usersAtStart[0]._id.toString(), limit: 1 })
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
+
+    expect(result.body.log.length).toBe(1);
+  });
+
+  test('fails with proper statuscode and message if the from parameter is supplied without the to parameter', async () => {
+    const usersAtStart = await helper.usersInDb();
+
+    const result = await api
+      .get(`${baseApiUrl}/log`)
+      .query({ userId: usersAtStart[0]._id.toString(), from: '2020-01-01' })
+      .expect(422)
+      .expect('Content-Type', /application\/json/);
+
+    expect(result.body.error.length).toBe(1);
+    expect(result.body.error[0].msg).toBe(
+      'A to date must be supplied if a from date is supplied'
+    );
+  });
+
+  test('fails with proper statuscode and message if the to parameter is supplied without the from parameter', async () => {
+    const usersAtStart = await helper.usersInDb();
+
+    const result = await api
+      .get(`${baseApiUrl}/log`)
+      .query({ userId: usersAtStart[0]._id.toString(), to: '2020-01-01' })
+      .expect(422)
+      .expect('Content-Type', /application\/json/);
+
+    expect(result.body.error.length).toBe(1);
+    expect(result.body.error[0].msg).toBe(
+      'A from date must be supplied if a to date is supplied'
+    );
+  });
+});
+
 afterAll(() => {
   mongoose.connection.close();
 });
